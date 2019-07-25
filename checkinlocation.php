@@ -34,26 +34,15 @@ if ('message' == $event_type) {
         $latitude = $event->message->latitude;
         $longitude = $event->message->longitude;
         // การประกอบ URL เพื่อใช้ ตรวจสอบพิกัด
-        $url = buildGnaviUrl($latitude, $longitude);
+        $result = checkInLocation($latitude, $longitude);
        
-        $json = file_get_contents($url);
-        $results = resultsParse($json);
+        
         // ดำเนินการตามเนื้อหาที่ได้มาของข้อมูลพิกัด
         if($results != null) {
-            // สลับอาร์เรย์เพื่อหลีกเลี่ยงผลลัพธ์เดียวกันเสมอ
-            shuffle($results);
-            // จำกัดไม่เกิน 5 ผลลัพธ์
-            if (count($results) > 5) {
-                $max = 5;
-            } else {
-                $max = count($results);
-            }
-            // model Carousel
-            $columns = [];
-            for ($i = 0; $i < $max; $i++) {
-                // // สร้างปุ่มเพื่อให้ภาพหมุน
+            
+                /* // สร้างปุ่มเพื่อให้ภาพหมุน
                 $action = new \LINE\LINEBot\TemplateActionBuilder\UriTemplateActionBuilder('Store details', $results[$i]['url']);
-                // สร้างคอลัมน์สำหรับ carousel
+                 สร้างคอลัมน์สำหรับ carousel
                 $column = new \LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselColumnTemplateBuilder($results[$i]['name'], $info, $results[$i]['image_url'], [$action]);
                 $columns[] = $column;
             }
@@ -63,6 +52,7 @@ if ('message' == $event_type) {
             $message = new \LINE\LINEBot\MessageBuilder\MultiMessageBuilder();
             $message->add($template_message);
             $response = $bot->replyMessage($event->replyToken, $message);
+            */
         } else {
             // เมื่อไม่มีผลการค้นหา
             $text_message_builder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('ฉันขอโทษ คุณไม่ได้อยู่ในพื้นที่ พัน.ขกท. . .');
@@ -93,9 +83,9 @@ else {
     $response = $bot->replyMessage($event->replyToken, $text_message_builder);
     echo $response->getHTTPStatus() . ' ' . $response->getRawBody();
 }
-// สร้าง URL สำหรับ Gurunavi API
-function buildGnaviUrl($latitude, $longitude) {
-    // การตั้งค่า Gurunavi API
+// ตรวจสอบพิกัดว่าอยู่ใน พื้นที่ หรือไม่
+function checkInLocation($latitude, $longitude) {
+    // ตรวจสอบ Latitude
     $gnavi_uri = 'http://api.gnavi.co.jp/RestSearchAPI/20150630/';
     $gnavi_acckey = getenv('GNAVI_API_KEY');
     $gnavi_format = 'json';
